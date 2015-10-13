@@ -1,9 +1,10 @@
 django_template
 ==============================
 
-This is a django template, to use it you can do something like:
+This is a django template, to use it you can do something like::
 django-admin startproject --template <path_to_project> <project_name>
-#django-admin startproject --template ./django_template/ test_project
+or
+django-admin startproject --template ./django_template/ test_project
 
 
 Settings
