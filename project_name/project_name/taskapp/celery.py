@@ -10,11 +10,11 @@ if not settings.configured:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
 
-app = Celery('workspace')
+app = Celery('{{ project_name }}')
 
 
 class CeleryConfig(AppConfig):
-    name = 'workspace.taskapp'
+    name = '{{ project_name }}.taskapp'
     verbose_name = 'Celery Config'
 
     def ready(self):
