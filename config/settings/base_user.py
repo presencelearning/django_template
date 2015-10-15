@@ -5,7 +5,7 @@ Base user settings
 - Add Django Debug Toolbar
 '''
 
-from .base_user import *  # noqa
+from .local import *  # noqa
 
 
 # django-debug-toolbar
