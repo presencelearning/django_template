@@ -46,4 +46,9 @@ INSTALLED_APPS += ('django_extensions', )
 # ------------------------------------------------------------------------------
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
+# TEMPLATES
+# ------------------------------------------------------------------------------
+DEFAULT_APP_TEMPLATE = 'https://github.com/presencelearning/django_app_template/zipball/master'
+DEFAULT_APP_TEMPLATE_EXTENSIONS = ['py', 'rst,py']
+
 # Your local stuff: Below this line define 3rd party library settings
