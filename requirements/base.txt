@@ -1,5 +1,14 @@
+# a new version of python
+#http://tecadmin.net/install-python-2-7-on-ubuntu-and-linuxmint/#
+# then create a symlink /usr/bin/python -> python2.7.10
+
 # stable Django
-django==1.8.5
+django==1.8.6
+
+# mysql
+mysqlclient
+https://pypi.python.org/pypi/mysqlclient
+
 
 # Models
 django-model-utils==2.3.1

@@ -30,9 +30,9 @@ DJANGO_SECURE_FRAME_DENY                SECURE_FRAME_DENY           n/a         
 DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS   HSTS_INCLUDE_SUBDOMAINS     n/a                                            True
 DJANGO_SESSION_COOKIE_HTTPONLY          SESSION_COOKIE_HTTPONLY     n/a                                            True
 DJANGO_SESSION_COOKIE_SECURE            SESSION_COOKIE_SECURE       n/a                                            False
-DJANGO_DEFAULT_FROM_EMAIL               DEFAULT_FROM_EMAIL          n/a                                            "workspace <noreply@workspace.presencelearning.com>"
-DJANGO_SERVER_EMAIL                     SERVER_EMAIL                n/a                                            "workspace <noreply@workspace.presencelearning.com>"
-DJANGO_EMAIL_SUBJECT_PREFIX             EMAIL_SUBJECT_PREFIX        n/a                                            "[workspace] "
+DJANGO_DEFAULT_FROM_EMAIL               DEFAULT_FROM_EMAIL          n/a                                            "<noreply@presencelearning.com>"
+DJANGO_SERVER_EMAIL                     SERVER_EMAIL                n/a                                            "<noreply@presencelearning.com>"
+DJANGO_EMAIL_SUBJECT_PREFIX             EMAIL_SUBJECT_PREFIX        n/a                                            "[] "
 ======================================= =========================== ============================================== ======================================================================
 
 The following table lists settings and their defaults for third-party applications:
