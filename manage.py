@@ -6,7 +6,7 @@ import shutil
 
 
 def create_default_settings_filed(username):
-    print 'creating local settings file for user: {username} '.format(username=username)
+    print('creating local settings file for user: {username} '.format(username=username))
     src_path = "./config/settings/base_user.py"
     dst_path = "./config/settings/{username}.py".format(username=username)
     shutil.copyfile(src_path, dst_path)
