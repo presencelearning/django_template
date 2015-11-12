@@ -4,9 +4,9 @@ django_template
 
 This is a django template, to use it you can do something like:
 ::
-    django-admin startproject --template <path_to_project> --extension=py,rst,in <project_name>
+    django-admin startproject --template <path_to_project> --extension=py,rst,yml <project_name>
     or
-    django-admin startproject --template https://github.com/presencelearning/django_template/zipball/master test_project
+    django-admin startproject --template https://github.com/presencelearning/django_template/zipball/master --extension=py,rst,yml test_project
 
 {% endif %}
 Settings
