@@ -1,27 +1,28 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import sys
 import getpass
 import shutil
 
+DEFAULT_SETTINGS_MODULE = 'config.settings.local'
 
-def create_default_settings_filed(username):
+
+def create_default_settings_file(filename):
     print('creating local settings file for user: {username} '.format(username=username))
     src_path = "./config/settings/base_user.py"
-    dst_path = "./config/settings/{username}.py".format(username=username)
+    dst_path = "./config/settings/{filename}.py".format(username=username)
     shutil.copyfile(src_path, dst_path)
 
 if __name__ == "__main__":
 
-    username = getpass.getuser()
-    settings_module = "config.settings.{username}".format(username=username)
+    if 'DJANGO_SETTINGS_MODULE' in os.environ:
+        settings_module = os.environ["DJANGO_SETTINGS_MODULE"]
+        settings_path = './' + settings_module.replace('.', '/') + '.py'
 
-    settings_path = './' + settings_module.replace('.', '/') + '.py'
-
-    if not os.path.exists(settings_path):
-        create_default_settings_filed(username)
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
+        if not os.path.exists(settings_path):
+            create_default_settings_file(settings_path.split('/')[-2])
+    else:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", DEFAULT_SETTINGS_MODULE)
 
     from django.core.management import execute_from_command_line
 
