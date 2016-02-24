@@ -8,14 +8,48 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
+
 from __future__ import absolute_import, unicode_literals
 
 import environ
+import datetime
+
+from django.core.urlresolvers import reverse_lazy
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 APPS_DIR = ROOT_DIR.path('{{ project_name }}')
 
 env = environ.Env()
+
+# DEBUG
+# ------------------------------------------------------------------------------
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = env.bool("DJANGO_DEBUG", False)
+
+# SECRET CONFIGURATION
+# ------------------------------------------------------------------------------
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+# Note: The default key only used for development and testing.
+SECRET_KEY = env.str('DJANGO_SECRET_KEY', '{{project_name}}secretkey')
+
+# This ensures that Django will be able to detect a secure connection
+# properly.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CACHE
+# ------------------------------------------------------------------------------
+# read from CACHE_URL, see https://github.com/ghickman/django-cache-url
+CACHES = {
+    'default': env.cache(default='locmemcache://'),
+}
+
+for cache in CACHES:
+    if CACHES[cache]['BACKEND'] == 'django_redis.cache.RedisCache':
+        CACHES[cache]['OPTIONS'] = {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,  # mimics memcache behavior.
+                                        # http://niwinz.github.io/django-redis/latest/#_memcached_exceptions_behavior
+        }
 
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -35,7 +69,8 @@ DJANGO_APPS = (
     'django.contrib.admin',
 )
 THIRD_PARTY_APPS = (
-    # 'crispy_forms',  # Form layouts
+    'rest_framework',
+    'rest_framework_swagger',
 )
 
 # Apps specific for this project go here.
@@ -52,6 +87,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE_CLASSES = (
     # Make sure djangosecure.middleware.SecurityMiddleware is listed first
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -65,11 +101,6 @@ MIGRATION_MODULES = {
     'sites': '{{ project_name }}.contrib.sites.migrations'
 }
 
-# DEBUG
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", False)
-
 # FIXTURE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
@@ -79,7 +110,17 @@ FIXTURE_DIRS = (
 
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
-EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+DEFAULT_FROM_EMAIL = env('DJANGO_DEFAULT_FROM_EMAIL',
+                         default='auth <noreply@presencelearning.com>')
+EMAIL_URL = env.email_url(default='consolemail://')
+EMAIL_HOST = EMAIL_URL.get('EMAIL_HOST')
+EMAIL_HOST_USER = EMAIL_URL.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = EMAIL_URL.get('EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = EMAIL_URL.get('EMAIL_BACKEND')
+EMAIL_FILE_PATH = EMAIL_URL.get('EMAIL_FILE_PATH')
+EMAIL_PORT = EMAIL_URL.get('EMAIL_PORT')
+EMAIL_USE_TLS = EMAIL_URL.get('EMAIL_USE_TLS')
+EMAIL_USE_SSL = EMAIL_URL.get('EMAIL_USE_SSL')
 
 # MANAGER CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -94,18 +135,10 @@ MANAGERS = ADMINS
 # DATABASE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-# DATABASES = {
-    # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    # 'default': env.db("DATABASE_URL", default="postgres:///{{ project_name }}"),
-# }
-# DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '{{ project_name }}.sqllite',
-    }
+    'default': env.db(default='mysql://learning:learning@localhost:3306/{{project_name}}'), # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
-
+DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -191,7 +224,7 @@ STATICFILES_FINDERS = (
 # MEDIA CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = str(APPS_DIR('media'))
+MEDIA_ROOT = str(APPS_DIR('uploaded_files'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = '/media/'
@@ -201,7 +234,7 @@ MEDIA_URL = '/media/'
 ROOT_URLCONF = 'config.urls'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # AUTHENTICATION CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -209,16 +242,12 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-# Some really nice defaults
-ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-
-# Custom user app defaults
-# Select the correct user model
-# AUTH_USER_MODEL = 'users.User'
-LOGIN_REDIRECT_URL = 'users:redirect'
-LOGIN_URL = 'account_login'
+# # Custom user app defaults
+# # Select the correct user model
+# AUTH_USER_MODEL = 'user.User'
+# LOGIN_REDIRECT_URL = 'http://live.presencelocal.com:9000/'
+# LOGIN_URL = reverse_lazy('login')
+# SITE_URL = ''
 
 # SLUGLIFIER
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
@@ -245,7 +274,11 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django.request': {
@@ -257,10 +290,46 @@ LOGGING = {
 }
 
 ########## CELERY
-INSTALLED_APPS += ('{{ project_name }}.taskapp.celery.CeleryConfig',)
-# if you are not using the django database broker (e.g. rabbitmq, redis, memcached), you can remove the next line.
-INSTALLED_APPS += ('kombu.transport.django',)
-BROKER_URL = env("CELERY_BROKER_URL", default='django://')
+from kombu import Exchange, Queue
+BROKER_URL = env("CELERY_BROKER_URL", default='amqp://guest:guest@localhost:5672/')
+BROKER_POOL_LIMIT = 0 # for ELB
+BROKER_HEARTBEAT = 30
+CELERY_TASK_SERIALIZER = "json"
+CELERY_DEFAULT_QUEUE = 'default_auth'
+CELERY_QUEUES = (
+    Queue('default_auth', Exchange('default_auth'), routing_key='default_auth'),
+)
+CELERY_TIMEZONE = 'UTC'
+CELERY_ACCEPT_CONTENT = ['json']
+BUS_URL = env("BUS_URL", default=BROKER_URL + 'bus')
+BUS_APP_ID = 'auth'
 ########## END CELERY
 
+########## Other internal apps
+SPED_INSIGHT_URL = env('SPED_INSIGHT_URL', default='') # https://user:password@url
+##########
+
 # Your common stuff: Below this line define 3rd party library settings
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+SWAGGER_SETTINGS = {
+    'api_version': '1.0',
+}
+
+OIDC_IDTOKEN_EXPIRE = 24*60*60 # in seconds
+# JWT_AUTH = {
+#     'JWT_DECODE_HANDLER': 'user.utils.jwt_decode_handler',
+#     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=OIDC_IDTOKEN_EXPIRE)
+# }
+
+TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
+TEST_OUTPUT_VERBOSE = True
+TEST_OUTPUT_DESCRIPTIONS = True
+TEST_OUTPUT_DIR = 'test_reports'

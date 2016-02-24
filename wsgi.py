@@ -1,5 +1,5 @@
 """
-WSGI config for {{ project_name }} project.
+WSGI config for auth project.
 
 This module contains the WSGI application used by Django's development server
 and any production WSGI deployments. It should expose a module-level variable
@@ -22,7 +22,8 @@ from whitenoise.django import DjangoWhiteNoise
 # if running multiple sites in the same mod_wsgi process. To fix this, use
 # mod_wsgi daemon mode with each site in its own daemon process, or use
 # os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.production"
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
+FLAVOR=os.environ.get("FLAVOR")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.{}".format(FLAVOR))
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
@@ -31,7 +32,7 @@ application = get_wsgi_application()
 
 # Use Whitenoise to serve static files
 # See: https://whitenoise.readthedocs.org/
-application = DjangoWhiteNoise(application)
+#application = DjangoWhiteNoise(application)
 
 # Apply WSGI middleware here.
 # from helloworld.wsgi import HelloWorldApplication

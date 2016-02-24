@@ -1,3 +1,26 @@
+TODO (Brian):
+ * Do we need to run the sphinx in the template or is this run after the django app is created from the template? If the latter, then we should add that step to the installation instructions below.
+
+ * settings, django secret key is set in a env var. I added a default for local development, which is not a random string. Investigate if this is an acceptable approach. (settings/common.py)
+
+ * Redis support enabled by default? (settings/common.py)
+
+ * Use DATABASES['default']['ATOMIC_REQUESTS'] = True by default? See https://docs.djangoproject.com/en/1.9/topics/db/transactions/ for advantages and disadvantages
+
+ * in settings/common.py LOGIN_REDIRECT_URL should be automatically set by a dns lookup or other means.
+
+ * Do we need slugify configured and present?
+
+ * The template celery config had added a couple of items the the INSTALLED_APPS, the auth app did not.
+    ########## CELERY
+    INSTALLED_APPS += ('{{ project_name }}.taskapp.celery.CeleryConfig',)
+    # if you are not using the django database broker (e.g. rabbitmq, redis, memcached), you can remove the next line.
+    INSTALLED_APPS += ('kombu.transport.django',)
+    BROKER_URL = env("CELERY_BROKER_URL", default='django://')
+    ########## END CELERY
+
+
+
 {% if False %}
 django_template
 ==============================
@@ -55,8 +78,9 @@ Basics
 
 The steps below will get you up and running with a local development environment. We assume you have the following installed:
 
-* pip
-* virtualenv
+* python3
+* pip3
+* virtualenv or pyvenv
 * MySQL
 
 First make sure to create and activate a virtualenv_, then open a terminal at the project root and install the requirements for local development::

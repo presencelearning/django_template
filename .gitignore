@@ -1,1 +1,17 @@
+# Mac-isms
+.DS_Store
+
+# Unixisms
+*~
+
+# Editors
+*.sublime-project
+*.sublime-workspace
 .idea
+
+
+# Other
+.tmp
+*.swp
+*.swo
+.orig

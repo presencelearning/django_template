@@ -1,20 +1,14 @@
-# a new version of python
-#http://tecadmin.net/install-python-2-7-on-ubuntu-and-linuxmint/#
-# then create a symlink /usr/bin/python -> python2.7.10
-
-# stable Django
-django==1.8.6
+# Stable Django
+django==1.9.2
 
 # mysql
-mysqlclient
-https://pypi.python.org/pypi/mysqlclient
-
+mysqlclient==1.3.7
 
 # Models
 django-model-utils==2.3.1
 
 # Configuration
-django-environ==0.3.0
+django-environ==0.4.0
 django-secure==1.0.1
 whitenoise==2.0.4
 
@@ -31,5 +25,31 @@ django-redis==4.2.0
 redis==2.10.3
 
 # celery for async tasks
-celery==3.1.18
+celery==3.1.20
 
+# DRF
+djangorestframework==3.3.2
+djangorestframework-jwt==1.7.2
+
+pyjwkest==1.1.0
+django-oidc-provider==0.2.5
+django-cors-headers==1.1.0
+
+django-rest-swagger==0.3.5
+
+freezegun== 0.3.6
+unittest-xml-reporting==1.14.0
+
+# WSGI Handler
+# ------------------------------------------------
+gevent==1.1rc4
+eventlet==0.18.2
+gunicorn==19.3.0
+
+# PL
+-e git+ssh://git@github.com/presencelearning/python-pl.git#egg=pl
+
+# Static and Media Storage
+# ------------------------------------------------
+# boto==2.38.0
+# django-storages-redux==1.3
