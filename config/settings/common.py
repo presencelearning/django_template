@@ -13,6 +13,7 @@ from __future__ import absolute_import, unicode_literals
 
 import environ
 import datetime
+import os
 
 from django.core.urlresolvers import reverse_lazy
 
@@ -30,7 +31,7 @@ DEBUG = env.bool("DJANGO_DEBUG", False)
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 # Note: The default key only used for development and testing.
-SECRET_KEY = env.str('DJANGO_SECRET_KEY', '{{project_name}}secretkey')
+SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='')
 
 # This ensures that Django will be able to detect a secure connection
 # properly.
@@ -54,29 +55,24 @@ for cache in CACHES:
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
-    # Default Django apps:
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Useful template tags:
-    # 'django.contrib.humanize',
-
-    # Admin
     'django.contrib.admin',
 )
 THIRD_PARTY_APPS = (
     'rest_framework',
     'rest_framework_swagger',
+    'raven.contrib.django.raven_compat',
 )
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    # '{{ project_name }}.users',  # custom users app
-    # Your stuff: custom apps go here
+    'plauth',
+    'hello_world', # example to be removed
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -126,7 +122,7 @@ EMAIL_USE_SSL = EMAIL_URL.get('EMAIL_USE_SSL')
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = (
-    ("""Sandy Lerman""", 'sandy@presencelearning.com'),
+    ('Sandy Lerman', 'sandy@presencelearning.com'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -136,9 +132,8 @@ MANAGERS = ADMINS
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
-    'default': env.db(default='mysql://learning:learning@localhost:3306/{{project_name}}'), # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
+    'default': env.db(default='mysql://learning:learning@localhost:3306/{{ project_name }}'), # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
-DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -199,9 +194,6 @@ TEMPLATES = [
     },
 ]
 
-# See: http://django-crispy-forms.readthedocs.org/en/latest/install.html#template-packs
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
@@ -236,22 +228,50 @@ ROOT_URLCONF = 'config.urls'
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'wsgi.application'
 
-# AUTHENTICATION CONFIGURATION
+# AUTHENTICATION CONFIGURATION AND API
 # ------------------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-# # Custom user app defaults
-# # Select the correct user model
-# AUTH_USER_MODEL = 'user.User'
-# LOGIN_REDIRECT_URL = 'http://live.presencelocal.com:9000/'
-# LOGIN_URL = reverse_lazy('login')
-# SITE_URL = ''
+AUTH_USER_MODEL = 'plauth.User'
+LOGIN_URL = reverse_lazy('oidc_login')
+LOGOUT_URL = 'https://login.presencetest.com/logout/'
+LOGIN_REDIRECT_URL = '/'
+DEPLOYED_SHA = env('DEPLOYED_SHA', default='')
+OIDC_CLIENT_ID = env('OIDC_CLIENT_ID', default=DEPLOYED_SHA)
+OIDC_CLIENT_SECRET = env('OIDC_CLIENT_SECRET', default=DEPLOYED_SHA)
+OIDC_SCOPES = ('openid', 'preferred_username', 'email', 'profile')
+OIDC_PROVIDER_URL = 'https://login.presencetest.com'
+OIDC_REDIRECT_URI = env('OIDC_REDIRECT_URI', default='https://{}.live.presencetest.com/oidc/callback/'.format(DEPLOYED_SHA))
+OIDC_PUBLIC_KEY = { # found at https://login.presencetest.com/openid/jwks/
+    "n": "2_S5pnyUjy0xlLE0IkfR-uBiCdFNaNu3aF2IeLNP_bW7YXLdl-gYIQZWaEXk9vnf6IKm4Ky5q6SaDPSRrGFi8jTrip3ka-oW4HRFtMcHqFcT6etaeQhBTHNjxOXXxBBh0C8FelkQ8-hsO9YZlwje38eYYhlnqyFJ3n6C83kgDUvvCI0Q04OrX3GvxNkGrL5IjwXHii5Pr9DcLJyYpmLY4V3eILbCpTcU9HOzJ8K2EWar2W0_jFVIOYca-Bf5PU2iZM6PQCEnBUFPvc7PwVVPj_HV_pUQVmTx1iI7FedufQrC2vG0KlUGJO4jVcH3n5IEfx8R0kTe0OXtU768KtgnsWPvkBiMOz7RUphkMXXZ8ZC4VCin90fGARcUCM3eV5OYqYIJooqz5DqhSjd7Y2NXhvIjDgqiCrqhIweHXoZBmvRQ6_6o_6Y5nBngT8_F-0gIHRN-eCFlnf16drlZasHqoecVQi4GfFuHU1e3zMA0wwshSwL4zEkTc8qXoT3Kp4xd9mayA1GubmZRXjN5S_IbLGM8aiSqlt5tJS3NEy4uUnLi5m5RoL1ljidDVcpNwZTbyZhqlM-18izFRPbzJjvIpDwn7EU_NnzYLxXagahK5DfG1zLQX6p563NS0zNSDZbqT6syfV1fHVm4s77ZDqGD8_RyCODZfmf9Z_CG2wErjDU",
+    "e": "AQAB",
+    "kid": "7058a84d74a4ae3423995e0ec051f908",
+    "alg": "RS256",
+    "use": "sig",
+    "kty": "RSA"
+}
+OIDC_STATE_COOKIE_DOMAIN = '.live.presencetest.com'
 
-# SLUGLIFIER
-AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
+}
+JWT_AUTH = {
+    'JWT_DECODE_HANDLER': 'pl.jwt.handler.jwt_decode_handler',
+    'JWT_PAYLOAD_GET_USERNAME_HANDLER': lambda p: p['sub'],
+}
 
+SWAGGER_SETTINGS = {
+    'api_version': '1.0',
+}
 
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -295,41 +315,22 @@ BROKER_URL = env("CELERY_BROKER_URL", default='amqp://guest:guest@localhost:5672
 BROKER_POOL_LIMIT = 0 # for ELB
 BROKER_HEARTBEAT = 30
 CELERY_TASK_SERIALIZER = "json"
-CELERY_DEFAULT_QUEUE = 'default_auth'
+CELERY_DEFAULT_QUEUE = 'default_{{ project_name }}'
 CELERY_QUEUES = (
-    Queue('default_auth', Exchange('default_auth'), routing_key='default_auth'),
+    Queue('default_{{ project_name }}', Exchange('default_{{ project_name }}'), routing_key='default_{{ project_name }}'),
 )
 CELERY_TIMEZONE = 'UTC'
 CELERY_ACCEPT_CONTENT = ['json']
-BUS_URL = env("BUS_URL", default=BROKER_URL + 'bus')
-BUS_APP_ID = 'auth'
-########## END CELERY
+CELERY_ALWAYS_EAGER = True
 
-########## Other internal apps
-SPED_INSIGHT_URL = env('SPED_INSIGHT_URL', default='') # https://user:password@url
-##########
+BUS_URL = env("BUS_URL", default='amqp://guest:guest@localhost:5672/bus')
+BUS_APP_ID = '{{ project_name }}'
 
-# Your common stuff: Below this line define 3rd party library settings
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-    ),
-}
-
-SWAGGER_SETTINGS = {
-    'api_version': '1.0',
-}
-
-OIDC_IDTOKEN_EXPIRE = 24*60*60 # in seconds
-# JWT_AUTH = {
-#     'JWT_DECODE_HANDLER': 'user.utils.jwt_decode_handler',
-#     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=OIDC_IDTOKEN_EXPIRE)
-# }
+########## TESTS
 
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_VERBOSE = True
 TEST_OUTPUT_DESCRIPTIONS = True
 TEST_OUTPUT_DIR = 'test_reports'
+
+# Your common stuff: Below this line define 3rd party library settings

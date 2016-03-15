@@ -1,0 +1,20 @@
+{%  extends "base.html" %}
+
+{% block title %}Hello World{% endblock %}
+
+{% block content %}
+<div>
+    Welcome! It works!
+</div>
+
+{% if debug %}
+<div>
+    <ul>
+        <li><a href="{% url "authenticated" %}">Authenticated page</a></li>
+        <li><a href="{% url "helloworld-list" %}">API</a> (you'll need a header Authorization: JWT &lt;token&gt; from <a href="https://login.presencetest.com/api/v1/status/">here</a>)</li>
+        <li><a href="/docs/">API documentation</a></li>
+        <li><a href="/admin/">Django admin</a> (your user needs to have is_superuser and is_staff set to True)</li>
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

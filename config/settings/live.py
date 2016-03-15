@@ -41,40 +41,6 @@ ALLOWED_HOSTS = [".presencelearning.com"]
 
 INSTALLED_APPS += ("gunicorn", )
 
-# STORAGE CONFIGURATION
-# ------------------------------------------------------------------------------
-# Uploaded Media Files
-# ------------------------
-# See: http://django-storages.readthedocs.org/en/latest/index.html
-INSTALLED_APPS += (
-    'storages',
-)
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-
-AWS_ACCESS_KEY_ID = env('DJANGO_AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('DJANGO_AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = env('DJANGO_AWS_STORAGE_BUCKET_NAME')
-AWS_AUTO_CREATE_BUCKET = True
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_CALLING_FORMAT = OrdinaryCallingFormat()
-
-# AWS cache settings, don't change unless you know what you're doing:
-AWS_EXPIRY = 60 * 60 * 24 * 7
-
-# TODO See: https://github.com/jschneier/django-storages/issues/47
-# Revert the following and use str after the above-mentioned bug is fixed in
-# either django-storage-redux or boto
-AWS_HEADERS = {
-    'Cache-Control': six.b('max-age=%d, s-maxage=%d, must-revalidate' % (AWS_EXPIRY, AWS_EXPIRY))
-}
-
-# URL that handles the media served from MEDIA_ROOT, used for managing stored files.
-MEDIA_URL = 'https://s3.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
-
-# Static Assests
-# ------------------------
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
-
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.loaders.cached.Loader
@@ -84,5 +50,42 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
         'django.template.loaders.app_directories.Loader',
     ]),
 ]
+
+CELERY_ALWAYS_EAGER = False
+
+RAVEN_CONFIG = {
+    'dsn': 'https://fcac94a8b3fe4f0b96bdb55028e5e4bc:938b93c84a954f5a94b5732f5adea60b@app.getsentry.com/13333',
+    'release': env('DEPLOYED_SHA', default='')
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry'],
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+    },
+    'loggers': {
+        'celery': {
+            'handlers'    : ['console'],
+            'propagate'    : True,
+        },
+        '': {
+            'handlers': ['sentry'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    }
+}
 
 # Your production stuff: Below this line define 3rd party library settings

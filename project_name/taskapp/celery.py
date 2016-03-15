@@ -1,27 +1,24 @@
-
 from __future__ import absolute_import
 import os
-from celery import Celery
-from django.apps import AppConfig
 from django.conf import settings
+from celery import Celery
+from raven import Client
+from raven.contrib.celery import register_signal
+
 
 if not settings.configured:
     # set the default Django settings module for the 'celery' program.
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+    flavor = os.environ.get('FLAVOR')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.{}".format(flavor))
 
+app = Celery('test_app')
 
-app = Celery('{{ project_name }}')
+app.config_from_object('django.conf:settings')
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-
-class CeleryConfig(AppConfig):
-    name = '{{ project_name }}.taskapp'
-    verbose_name = 'Celery Config'
-
-    def ready(self):
-        # Using a string here means the worker will not have to
-        # pickle the object when using Windows.
-        app.config_from_object('django.conf:settings')
-        app.autodiscover_tasks(lambda: settings.INSTALLED_APPS, force=True)
+if hasattr(settings, 'RAVEN_CONFIG'):
+    client = Client(dsn=settings.RAVEN_CONFIG['dsn'])
+    register_signal(client)
 
 
 @app.task(bind=True)

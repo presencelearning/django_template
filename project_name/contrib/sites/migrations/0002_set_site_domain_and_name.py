@@ -11,8 +11,8 @@ def update_site_forward(apps, schema_editor):
     Site.objects.update_or_create(
         id=settings.SITE_ID,
         defaults={
-            "domain": "{{ project_name}}.presencelearning.com",
-            "name": "{{ project_name}}"
+            "domain": "test_app.presencelearning.com",
+            "name": "test_app"
         }
     )
 

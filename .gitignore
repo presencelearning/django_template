@@ -9,9 +9,13 @@
 *.sublime-workspace
 .idea
 
+# Python
+__pycache__
+*.pyc
 
 # Other
 .tmp
 *.swp
 *.swo
 .orig
+.virtualenv

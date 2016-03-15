@@ -1,26 +1,3 @@
-TODO (Brian):
- * Do we need to run the sphinx in the template or is this run after the django app is created from the template? If the latter, then we should add that step to the installation instructions below.
-
- * settings, django secret key is set in a env var. I added a default for local development, which is not a random string. Investigate if this is an acceptable approach. (settings/common.py)
-
- * Redis support enabled by default? (settings/common.py)
-
- * Use DATABASES['default']['ATOMIC_REQUESTS'] = True by default? See https://docs.djangoproject.com/en/1.9/topics/db/transactions/ for advantages and disadvantages
-
- * in settings/common.py LOGIN_REDIRECT_URL should be automatically set by a dns lookup or other means.
-
- * Do we need slugify configured and present?
-
- * The template celery config had added a couple of items the the INSTALLED_APPS, the auth app did not.
-    ########## CELERY
-    INSTALLED_APPS += ('{{ project_name }}.taskapp.celery.CeleryConfig',)
-    # if you are not using the django database broker (e.g. rabbitmq, redis, memcached), you can remove the next line.
-    INSTALLED_APPS += ('kombu.transport.django',)
-    BROKER_URL = env("CELERY_BROKER_URL", default='django://')
-    ########## END CELERY
-
-
-
 {% if False %}
 django_template
 ==============================
@@ -32,44 +9,6 @@ This is a django template, to use it you can do something like:
     django-admin startproject --template https://github.com/presencelearning/django_template/zipball/master --extension=py,rst,yml test_project
 
 {% endif %}
-Settings
-------------
-
-{{ project_name }} relies extensively on environment settings which **will not work with Apache/mod_wsgi setups**. It has been deployed successfully with both Gunicorn/Nginx and even uWSGI/Nginx.
-
-For configuration purposes, the following table maps the 'workspace' environment variables to their Django setting:
-
-======================================= =========================== ============================================== ======================================================================
-Environment Variable                    Django Setting              Development Default                            Production Default
-======================================= =========================== ============================================== ======================================================================
-DJANGO_CACHES                           CACHES (default)            locmem                                         redis
-DJANGO_DATABASES                        DATABASES (default)         See code                                       See code
-DJANGO_DEBUG                            DEBUG                       True                                           False
-DJANGO_SECRET_KEY                       SECRET_KEY                  CHANGEME!!!                                    raises error
-DJANGO_SECURE_BROWSER_XSS_FILTER        SECURE_BROWSER_XSS_FILTER   n/a                                            True
-DJANGO_SECURE_SSL_REDIRECT              SECURE_SSL_REDIRECT         n/a                                            True
-DJANGO_SECURE_CONTENT_TYPE_NOSNIFF      SECURE_CONTENT_TYPE_NOSNIFF n/a                                            True
-DJANGO_SECURE_FRAME_DENY                SECURE_FRAME_DENY           n/a                                            True
-DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS   HSTS_INCLUDE_SUBDOMAINS     n/a                                            True
-DJANGO_SESSION_COOKIE_HTTPONLY          SESSION_COOKIE_HTTPONLY     n/a                                            True
-DJANGO_SESSION_COOKIE_SECURE            SESSION_COOKIE_SECURE       n/a                                            False
-DJANGO_DEFAULT_FROM_EMAIL               DEFAULT_FROM_EMAIL          n/a                                            "<noreply@presencelearning.com>"
-DJANGO_SERVER_EMAIL                     SERVER_EMAIL                n/a                                            "<noreply@presencelearning.com>"
-DJANGO_EMAIL_SUBJECT_PREFIX             EMAIL_SUBJECT_PREFIX        n/a                                            "[] "
-======================================= =========================== ============================================== ======================================================================
-
-The following table lists settings and their defaults for third-party applications:
-
-======================================= =========================== ============================================== ======================================================================
-Environment Variable                    Django Setting              Development Default                            Production Default
-======================================= =========================== ============================================== ======================================================================
-DJANGO_AWS_ACCESS_KEY_ID                AWS_ACCESS_KEY_ID           n/a                                            raises error
-DJANGO_AWS_SECRET_ACCESS_KEY            AWS_SECRET_ACCESS_KEY       n/a                                            raises error
-DJANGO_AWS_STORAGE_BUCKET_NAME          AWS_STORAGE_BUCKET_NAME     n/a                                            raises error
-DJANGO_MAILGUN_API_KEY                  MAILGUN_ACCESS_KEY          n/a                                            raises error
-DJANGO_MAILGUN_SERVER_NAME              MAILGUN_SERVER_NAME         n/a                                            raises error
-======================================= =========================== ============================================== ======================================================================
-
 Getting up and running
 ----------------------
 
@@ -79,19 +18,37 @@ Basics
 The steps below will get you up and running with a local development environment. We assume you have the following installed:
 
 * python3
+* python3-dev
 * pip3
 * virtualenv or pyvenv
 * MySQL
 
-First make sure to create and activate a virtualenv_, then open a terminal at the project root and install the requirements for local development::
+First open a terminal and make sure to create and activate a virtualenv_::
 
-    $ pip install -r requirements/local.txt
+    $ cd {{ project_name }}
+    $ virtualenv -p `which python3` .virtualenv
+    $ source .virtualenv/bin/activate
 
 .. _virtualenv: http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
+Then install the requirements for local development::
+
+    $ pip install -r requirements/local.txt
+
+
+Connect to mysql::
+
+    $ mysql -u root -p
+
+If you don't already have a user, create one::
+
+    > CREATE USER 'learning'@'localhost' IDENTIFIED BY 'learning';
+    > GRANT ALL PRIVILEGES ON * . * TO 'learning'@'localhost';
+    > FLUSH PRIVILEGES;
+
 Create a local MySQL database::
 
-    $ createdb {{ project_name }}
+    $ CREATE DATABASE {{ project_name }} CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 Run ``migrate`` on your new database::
 
@@ -111,20 +68,36 @@ To create an **superuser account**, use this command::
     $ python manage.py createsuperuser
 
 
+Settings
+------------
+
+See config/settings/common.py for default settings and https://django-environ.readthedocs.org/en/latest/ for the format of the main ones.
+
+
+Documentation
+-------------
+
+To initialize the sphinx documentation::
+
+    $ sphinx-quickstart --project="{{ project_name }}" --author="PresenceLearning" -v 0.1 -r 0.1 -l en --makefile -q docs
+
 
 Celery
 ^^^^^^
-This app comes with Celery.
+This app comes with Celery but it runs in eager mode by default (executes tasks directly without sending them to a broker).
 
 To run a celery worker:
 
 .. code-block:: bash
 
-    cd workspace
-    celery -A workspace worker -l info
+    celery -A {{ project_name }}.taskapp worker -l info
 
 Please note: For Celerys import magic to work, it is important *where* the celery commands are run. If you are in the same folder with *manage.py*, you should be right.
 
 
+Registering your app on test
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It's time to write the code!!!
+If you don't use the default port or host, you will need to register a new client on Auth (on test) to be able to login. Here is an example if you run on port 9000::
+
+    ./manage.py create_client --name=localhost9000 --id=localhost9000 --secret=<yoursecret> --rooturl="http://localhost:9000" --redirecturl="http://localhost:9000/oidc/callback/" --logouturl="http://localhost:9000/logout/""
