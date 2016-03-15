@@ -44,7 +44,7 @@ eventlet==0.18.2
 gunicorn==19.3.0
 
 # PL
--e git+ssh://git@github.com/presencelearning/python-pl.git@3db4bc80acf45b1d23e711bfd0e049560b518a98#egg=pl
+-e git+ssh://git@github.com/presencelearning/python-pl.git@ec4373db8093a6b454e5bf03b017c09643ff0209#egg=pl
 
 # Static and Media Storage
 # ------------------------------------------------

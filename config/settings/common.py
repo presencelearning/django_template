@@ -67,6 +67,7 @@ THIRD_PARTY_APPS = (
     'rest_framework',
     'rest_framework_swagger',
     'raven.contrib.django.raven_compat',
+    'pl.service',
 )
 
 # Apps specific for this project go here.
@@ -236,14 +237,12 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_USER_MODEL = 'plauth.User'
 LOGIN_URL = reverse_lazy('oidc_login')
-LOGOUT_URL = 'https://login.presencetest.com/logout/'
 LOGIN_REDIRECT_URL = '/'
 DEPLOYED_SHA = env('DEPLOYED_SHA', default='')
 OIDC_CLIENT_ID = env('OIDC_CLIENT_ID', default=DEPLOYED_SHA)
 OIDC_CLIENT_SECRET = env('OIDC_CLIENT_SECRET', default=DEPLOYED_SHA)
 OIDC_SCOPES = ('openid', 'preferred_username', 'email', 'profile')
-OIDC_PROVIDER_URL = 'https://login.presencetest.com'
-OIDC_REDIRECT_URI = env('OIDC_REDIRECT_URI', default='https://{}.live.presencetest.com/oidc/callback/'.format(DEPLOYED_SHA))
+OIDC_REDIRECT_URI = env('OIDC_REDIRECT_URI', default='https://localhost:8000/oidc/callback/'.format(DEPLOYED_SHA))
 OIDC_PUBLIC_KEY = { # found at https://login.presencetest.com/openid/jwks/
     "n": "2_S5pnyUjy0xlLE0IkfR-uBiCdFNaNu3aF2IeLNP_bW7YXLdl-gYIQZWaEXk9vnf6IKm4Ky5q6SaDPSRrGFi8jTrip3ka-oW4HRFtMcHqFcT6etaeQhBTHNjxOXXxBBh0C8FelkQ8-hsO9YZlwje38eYYhlnqyFJ3n6C83kgDUvvCI0Q04OrX3GvxNkGrL5IjwXHii5Pr9DcLJyYpmLY4V3eILbCpTcU9HOzJ8K2EWar2W0_jFVIOYca-Bf5PU2iZM6PQCEnBUFPvc7PwVVPj_HV_pUQVmTx1iI7FedufQrC2vG0KlUGJO4jVcH3n5IEfx8R0kTe0OXtU768KtgnsWPvkBiMOz7RUphkMXXZ8ZC4VCin90fGARcUCM3eV5OYqYIJooqz5DqhSjd7Y2NXhvIjDgqiCrqhIweHXoZBmvRQ6_6o_6Y5nBngT8_F-0gIHRN-eCFlnf16drlZasHqoecVQi4GfFuHU1e3zMA0wwshSwL4zEkTc8qXoT3Kp4xd9mayA1GubmZRXjN5S_IbLGM8aiSqlt5tJS3NEy4uUnLi5m5RoL1ljidDVcpNwZTbyZhqlM-18izFRPbzJjvIpDwn7EU_NnzYLxXagahK5DfG1zLQX6p563NS0zNSDZbqT6syfV1fHVm4s77ZDqGD8_RyCODZfmf9Z_CG2wErjDU",
     "e": "AQAB",
