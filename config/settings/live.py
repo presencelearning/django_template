@@ -32,6 +32,9 @@ SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
 
+# SSL connection to DB for Live
+DATABASES['default']['OPTIONS']['ssl'] = '/etc/mysql/rds-combined-ca-bundle.pem'
+
 # SITE CONFIGURATION
 # ------------------------------------------------------------------------------
 # Hosts/domain names that are valid for this site
