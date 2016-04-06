@@ -11,7 +11,7 @@ if not settings.configured:
     flavor = os.environ.get('FLAVOR')
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.{}".format(flavor))
 
-app = Celery('test_app')
+app = Celery('{{ project_name }}_app')
 
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
