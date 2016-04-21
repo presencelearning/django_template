@@ -136,6 +136,11 @@ DATABASES = {
     'default': env.db(default='mysql://learning:learning@localhost:3306/{{ project_name }}'), # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
 }
 
+for db in DATABASES:
+    DATABASES[db]['OPTIONS'] = {
+        'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'
+    }
+
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
 # Local time zone for this installation. Choices can be found here:
