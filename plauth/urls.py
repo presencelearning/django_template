@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views
+from pl.user import views
 
 urlpatterns = [
     url(r'^login/$', views.oidc_login, name='oidc_login'),
