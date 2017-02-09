@@ -1,50 +1,50 @@
 # Stable Django
-django==1.9.3
+django==1.10.5
 
 # mysql
-mysqlclient==1.3.7
+mysqlclient==1.3.9
 
 # Models
-django-model-utils==2.3.1
-django-dirtyfields==0.8.1
+django-model-utils==2.6.1
+django-dirtyfields==1.2.1
 
 # Configuration
-django-environ==0.4.0
+django-environ==0.4.1
 django-secure==1.0.1
 
 # Time zones support
-python-dateutil==2.4.2
-pytz==2015.6
+python-dateutil==2.6.2
+pytz==2016.10
 
 # Redis support
-django-redis==4.2.0
-redis==2.10.3
+django-redis==4.7.0
+redis==2.10.5
 
 # celery for async tasks
-celery==3.1.20
+celery==4.0.2
 
 # DRF
-djangorestframework==3.3.2
-cryptography==1.2.3
-djangorestframework-jwt==1.7.2
+djangorestframework==3.5.3
+cryptography==1.7.2
+djangorestframework-jwt==1.9.0
 
-pyjwkest==1.1.0
-django-cors-headers==1.1.0
+pyjwkest==1.3.2
+django-cors-headers==2.0.2
 
-django-rest-swagger==0.3.5
+django-rest-swagger==2.1.1
 
 freezegun== 0.3.6
-unittest-xml-reporting==1.14.0
-raven==5.11.1
+unittest-xml-reporting==2.1.0
+raven==5.32.0
 
 # WSGI Handler
 # ------------------------------------------------
-gevent==1.1rc4
-eventlet==0.18.2
-gunicorn==19.3.0
+gevent==1.2.1
+eventlet==0.20.1
+gunicorn==19.6.0
 
 # PL
--e git+ssh://git@github.com/presencelearning/python-pl.git@308b9c791d0a1e8e2b6d774d832de633f3d910de#egg=pl
+-e git+ssh://git@github.com/presencelearning/python-pl.git@ee599248abcd29a2363ecbe04e026e59e649bd49#egg=pl
 
 # Static and Media Storage
 # ------------------------------------------------
