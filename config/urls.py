@@ -10,11 +10,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.defaults import bad_request, permission_denied, page_not_found, server_error
 from .api_urls import router
+from pl.docs.swagger import urls as swagger_urls
 
 urlpatterns = [
     # Django Admin
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^docs/', include('rest_framework_swagger.urls')),
+    url(r'^docs/', include(swagger_urls)),
     url(r'^oidc/', include('plauth.urls')),
     # Your stuff: custom urls includes go here
     url(r'^api/v1/', include(router.urls)),
